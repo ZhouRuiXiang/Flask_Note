@@ -1,0 +1,49 @@
+# app.py
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+import config
+from models import User
+
+app = Flask(__name__)
+app.config.from_object(config)
+db = SQLAlchemy(app)
+# models.py
+from app import db
+class User(db.Model):
+    id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    username = db.Column(db.String(50), nullable=False)
+
+1. 在app.py文件中引用了User模型，在models.py文件中又引用了app中的数据库db对象
+造成循环引用 ImportError
+2. 解决方法：
+设置一个第三方的文件exts.py
+在exts.py中创建db对象 app.py负责初始化，models.py直接使用
+# app.py
+import config
+from exts import db
+from models import User
+
+app = Flask(__name__)
+# 这里一定要先配置config才能初始化app
+app.config.from_object(config)
+db.init_app(app)
+
+
+# models.py
+from exts import db
+
+# exts.py
+from flask_sqlalchemy import SQLAlchemy
+db = SQLAlchemy()
+
+# config.py
+USERNAME = "root"
+PASSWORD = "286977"
+HOSTNAME = "127.0.0.1"
+PORT = "3306"
+DATABASE = "flask_migrate"
+DB_URI = "mysql+mysqlconnector://%s:%s@%s:%s/%s" % (USERNAME, PASSWORD, HOSTNAME, PORT, DATABASE)
+
+SQLALCHEMY_DATABASE_URI = DB_URI
+SQLALCHEMY_TRACK_MODIFICATIONS = False
+DEBUG = True

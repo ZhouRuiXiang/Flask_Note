@@ -1,0 +1,79 @@
+# cookie
+在网站中，http请求是无状态的，也就是说即使第一次和服务器连接并且登录后，
+第二次请求服务器依然不知道是哪个用户，cookie的出现就是为了解决这个问题，
+第一次登录后服务器返回一些数据（cookie）给浏览器，然后浏览器保存在本地的，
+当该用户发送第二次请求的时候，就会自动的把上次请求存储的cookie数据自动的
+的携带给服务器，服务器通过浏览器携带的数据就能判断当前用户，cookie存储的
+数据量有限，不同浏览器不同，一般不会超过4KB，因此使用cookie只能存储一些
+小量的数据。
+1. cookie的有效期：服务器可以设置cookie的有效期，以后浏览器会自动清除
+过期的cookie。
+2. 每台服务器对应浏览器有自己的cookie。访问不同的网站携带不同的cookie。
+
+3. cookie有域名的概念：只有访问同一个域名，才会把之前相同域名返回的cookie携带给服务器，
+即第二点描述的结论。
+
+
+# flask操作cookie
+1. 设置cookie
+在Response的对象上设置
+flask.Response()对象有一个set_cookie方法
+resp = Response("Hello World!")
+    resp.set_cookie(key="username", value="xingchen")
+
+2. 查看cookie
+* Headers中的cookie
+* url输入框左边的信息icon，找到相应的域名，查看cookie
+* Chrome的设置界面
+
+3. 删除cookie
+@app.route('/del/')
+def delCookie():
+    resp = Response("删除cookie")
+    resp.delete_cookie(key="username")
+    return resp
+
+4. 设置cookie的有效期
+@app.route('/')
+def hello_world():
+    resp = Response("Hello World!")
+    # max_age 以秒为单位，距离现在多少秒后过期
+    # resp.set_cookie(key="username", value="xingchen", max_age=100)
+    # expires datetime类型 设置的时间是Greenwich Mean Time（格林威治时间/格林尼治时间）
+    # 格林威治时间 + 8小时 = 东八区时间
+    # expires虽然在http协议是被废弃了，但是到目前为止，所有的浏览器还是都支持
+    # max_age在IE8以下的浏览器是不支持的
+    expires = datetime(year=2019, month=8, day=22, hour=9, minute=14, second=20)
+    # resp.set_cookie(key="username", value="xingchen", expires=expires)
+    # 若max_age和expires都指定，则默认使用max_age参数的值
+    resp.set_cookie(key="username", value="xingchen", max_age=600, expires=expires)
+    return resp
+
+5. 设置cookie的域名(domain)
+cookie默认是在主域名下使用，如果要在子域名下使用，set_cookie要传递一个domain=".域名"
+resp.set_cookie(key="username", value="xingchen", max_age=600, domain=".test.com")
+
+
+# 配置子域名
+# subViews.py
+from flask import Blueprint, request
+
+bp = Blueprint("sub", __name__, subdomain="sub")
+
+
+@bp.route('/')
+def index():
+    username = request.cookies.get("username")
+    return username or "没有获取到cookie"
+
+
+# hosts
+127.0.0.1	test.com
+127.0.0.1	sub.test.com
+
+# app.py
+from subViews import bp
+app = Flask(__name__)
+app.register_blueprint(bp)
+app.config["SERVER_NAME"] = "test.com:5000"
+

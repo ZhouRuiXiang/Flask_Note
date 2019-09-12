@@ -1,0 +1,140 @@
+{% extends 'header_footer/base.html' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    {% block title  %}
+        用户界面
+    {% endblock %}
+</head>
+<body>
+{#    {% include 'header_footer/header.html' %}#}
+    {#  模板继承#}
+
+    {% block header %}
+
+        <div class="content">
+            <br>
+    {#        调用另外一个block重写的代码#}
+            <p>{{ self.title() }}</p>
+
+            <p>用户名：{{ username }}</p>
+
+    {#    abs过滤器#}
+        <p>年龄：{{ (age|int)|abs }}</p>
+        <p>性别：{{ sex }}</p>
+        <p>居住地：
+        <table>
+            <thead>
+                <tr>
+                    {% for key in location.keys() %}
+                        <td>{{ key }}</td>
+
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    {% for value in location.values() %}
+                        <td>{{ value }}</td>
+                    {% else %}
+                        不详
+                    {% endfor %}
+
+                </tr>
+            </tbody>
+        </table>
+            {% for foo in location %}
+
+            {% endfor %}
+
+        </p>
+        <p>书籍：
+        <table>
+            <thead>
+                <tr style="background-color: lightblue">
+                    <td>序号</td>
+                    <td>书名</td>
+                    <td>作者</td>
+                    <td>价格</td>
+                </tr>
+            </thead>
+            <tbody>
+                {% for book in books %}
+                    {% if loop.last %}
+                        <tr style="font-weight: 500;background-color: hotpink">
+                    {% elif loop.first %}
+                        <tr style="font-weight: 500;background-color: forestgreen">
+                    {% else %}
+                        <tr>
+                    {% endif %}
+    {#                <tr>#}
+                        {% for foo in book.values() %}
+                            <td>{{ foo }}</td>
+                        {% endfor %}
+                    </tr>
+
+
+                {% endfor %}
+
+            </tbody>
+        </table>
+        </p>
+        <p>爱好：</p>
+            {% for hobby in hobbies|reverse %}
+                <li>{{ hobby }}</li>
+
+            {% endfor %}
+
+        <p>个性签名：{{ signature|default('Aspirational high', True) }}</p>
+
+        <p>标题：
+            {% if article|length != 0  %}
+                习近平视察
+            {% else %}
+                ......
+            {% endif %}
+        </p>
+        <p>文章：{{ article|truncate(12, '...') }}</p>
+        <p>九九乘法表：
+        <table border="1">
+            {% for i in range(1, 10) %}
+                <tr>
+    {#                {% for j in range(1, i + 1) %}#}
+                    {% for j in range(1, 10) if j <= i %}
+    {#                    <td>{{ i|string +'×'+ j|string+'='+(i*j)|string}}</td>#}
+                        <td>{{ i }}×{{ j }}={{ i*j }}</td>
+                    {% endfor %}
+
+                </tr>
+            {% endfor %}
+
+
+        </table>
+        </p>
+        <p>发布时间：{{ create_time|time_interval }}</p>
+
+    {#    {% autoescape off %}#}
+    {#         {{'我的名字是%s'|format('Star')}}#}
+    {##}
+    {#    {% endautoescape %}#}
+    {#    {%if (age|int)|abs == 21 %}#}
+    {#        <p>年龄是21岁</p>#}
+    {#    {% else %}#}
+    {#        <p>年龄不是21岁</p>#}
+    {#    {% endif %}#}
+    {#    <p>{{ article|replace("hello", 'hi') }}</p>#}
+    {#    合并使用多个标签#}
+    {#    <p>{{ (alert|striptags)|truncate(8, '...') }}</p>#}
+    {#    <p>{{ alert|striptags }}</p>#}
+    {#    <p>{{ article|wordcount }}</p>#}
+    {#    <p>{{ article|strip('h') }}</p>#}
+
+    {#    调用父模板中 header block的内容#}
+        {{ super() }}
+        </div>
+        {% include 'header_footer/footer.html' %}
+
+    {% endblock %}
+</body>
+</html>

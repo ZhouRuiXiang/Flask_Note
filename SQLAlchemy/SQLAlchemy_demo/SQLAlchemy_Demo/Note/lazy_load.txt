@@ -1,0 +1,57 @@
+# 懒加载
+# 假设有两个表（ORM模型），user和article
+class User(Base):
+    __tablename__ = "user"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    username = Column(String(50), nullable=False)
+
+
+class Article(Base):
+    __tablename__ = "article"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    title = Column(String(50), nullable=False)
+    # 使用default=datatime.now() 创建的对象时间会一样
+    create_time = Column(DateTime, nullable=False, default=datetime.now)
+    uid = Column(Integer, ForeignKey("user.id"))
+    author = relationship("User", backref=backref("my_articles", order_by=id.desc(), lazy="dynamic"))
+
+    def __repr__(self):
+        return "<Article>%s, %s" % (self.id, self.title)
+# 创建一个用户，以及100000篇文章，皆由这个用户发表
+Base.metadata.drop_all()
+Base.metadata.create_all()
+user = User(username="小明")
+for i in range(100):
+    title = "%s" % i
+    article = Article(title=title)
+    article.author = user
+    session.add(article)
+session.commit()
+
+
+有一个需求，要实现查找到这个用户的id == 50000 的文章
+普通方法
+# <class 'sqlalchemy.orm.collections.InstrumentedList'>------user.my_articles
+author = relationship("User", backref=backref("my_articles", order_by=id.desc()))
+遍历user.my_articles
+过滤条件进行查询
+start2 = time.perf_counter()
+for article in user.my_articles:
+    if article.id == 50000:
+        print(article)
+
+print(float("{:.10f}".format(time.perf_counter()))-float("{:.10f}".format(start2)))
+# time_cost: 0.0374005088
+
+设置懒加载
+# <class 'sqlalchemy.orm.dynamic.AppenderQuery'>------user.my_articles
+author = relationship("User", backref=backref("my_articles", order_by=id.desc(), lazy="dynamic"))
+start = time.perf_counter()
+print(user.my_articles.filter(Article.id == 50000).all())
+print(float("{:.10f}".format(time.perf_counter()))-float("{:.10f}".format(start)))
+# time_cost: 0.0160502837
+
+
+# 10W条数据，查询中间的一个数据，懒加载是普通查询花费时间的一半。
+
+

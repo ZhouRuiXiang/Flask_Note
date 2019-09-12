@@ -1,0 +1,229 @@
+1. 下载安装redis及其依赖(Linux)
+apt-get install redis-server
+
+2. 查看reids服务启动信息
+ps aux|grep redis
+
+3. 手动启动及停止
+service redis-server start
+service redis-server stop
+
+4. 查看redis启动信息后连接客户端
+redis-cli -p [port(6379)] -h [host(127.0.0.1)]
+
+5. 设置和查看用户名
+set username
+get username
+
+
+#　查看全部的key
+keys *
+
+# 清除全部的key-value
+flushall
+
+# Redis字符串操作
+## 设置字符串
+set key value
+
+## 设置过期时间
+
+1. 	set username xingchen EX timeout(单位为秒)
+
+2. 	set username xingchen
+	expire key(username) timeout
+
+## 查看过期时间
+ttl username
+
+# Redis列表操作
+
+## 在列表左边添加元素
+lpush key value
+
+## 在列表右边添加元素
+rpush key value
+
+## 在列表左边删除元素
+lpop key
+
+## 在列表右边删除元素
+rpop key
+
+## 查看当前列表中的元素
+lrange key start end
+查看全部指定key的全部值：lrange id 0 -1
+
+## 查看列表的元素个数
+llen key
+
+## 按索引返回指定元素
+lindex key index
+
+## 删除指定元素
+lrem key count value
+count > 0 从列表头到尾删除指定的count个元素
+count < 0 从列表尾到头删除指定的count个元素
+count = 0 删除所有指定的count个元素
+
+# Rediss集合操作
+
+## 集合添加元素
+sadd set member member2...
+
+## 查看集合中的元素
+smembers set
+
+## 删除指定集合元素
+srem set member
+
+## 查看集合中元素个数
+scard set
+
+## 获取多个集合的交集
+sinter set1 set2...
+若其中一个集合无交集，则返回 (empty list or set)
+
+## 获取多个集合的并集
+sunion set1 set2...
+
+## 获取多个集合的差集
+sdiff set1 set2...
+
+# Hash操作
+
+{
+	"username": "xingchen",
+	"social": ["QQ", "Wechat", "E-mail"]
+	"key": 	{
+					"fiele": "value",
+					"field": "value"
+				}
+}
+
+##　添加一个field
+hset key field value
+
+## 添加多个field
+hmset key field value field2 value...
+
+如: hmset car cylinder 6 color black
+
+## 删除指定的field-value
+hdel key field
+
+## 获取hash中的键值对个数
+hlen car
+
+## 获取哈希中所有的field和value
+hgetall key
+
+## 获取哈希中所有的field
+hkeys key
+
+## 获取哈希中所有的value
+hvals key
+
+## 判断哈希中是否存在某个field
+hexists key field
+
+# 事务操作
+
+##　隔离性：事务中的所有命令都会被序列化，按顺序执行，且不会被其他命令所打断。
+ps: Redis中没有隔离级别的概念，因为事务在提交之前任务指令都不会被实际执行。
+
+## 原子性：事务包含的所有操作要么全部成功，要么全部失败回滚，成功必须要完全应用到数据库中，失败则不能对数据库产生影响。
+
+##  multi 	//创建
+	......
+	discard //回滚
+	exec	//提交
+
+ps:Redis中不保证原子性，只有决定是否开始执行全部指令的能力，没有执行到一半进行回滚的能力。
+在Redis中失败分两种
+1. 
+multi
+set string abc    ----1
+lrange string 0 -1  -----2
+exec
+则命令1正常执行，命令2失败。
+
+2.当事务执行到一半redis被kill，已经执行的命令也不会被回滚。
+
+## Watch指令, 类似乐观锁，事务提交时，如果key的值已被别的客户端改变，比如某个list已被客户端push/pop过了，整个事务队列都不会被执行。
+
+## watch 后可跟多个指令 unwatch 取消监听
+
+# 发布和订阅
+
+## 订阅：subscribe channel
+subscribe chatroom1 chatroom2 
+## 发布：publish channel message
+publish chatroom1 "Hello World"
+
+
+redis.conf配置文件存储在/etc/redis/目录下
+同步保存的文件在/var/lib/redis/目录下
+# RDB同步机制
+
+1. 开启和关闭：默认开启，若要关闭，可注释掉'redis.conf'中的所有sava选项。
+2. 同步机制：
+	* save 900 1: 如果在900s以内发生1次数据更新操作，那么就会出现一次同步操作。
+	* save 300 10: 如果在300s以内发生10次数据更新操作，那么就会出现一次同步操作。
+	* save 60 10000: 如果在60s以内发生10000次数据更新操作，那么就会出现一次同步操作。
+3. 存储内容：存储经过压缩的具体的值。
+4. 存储路径：根据'redis.conf'下的'dir'以及'rdbfilename'指定。默认是'/var/lib/redis/dump.rdb'
+5. 优点：
+	* 存储数据到文件中会进行压缩，文件体积比AOF小。
+	* 因为压缩的是具体的值，所以灾难恢复时速度快
+	* 非常适用于备份
+6. 缺点：
+	* RDB在多少时间内发生多少写操作的时候就会触发同步机制，且同步的时候重新保存整个Redis中的数据，因此一般设置5min才保存一次数据。在这种情况下，一旦服务器故障，会造成5min的数据丢失。
+	* 在数据保存进RDB的时候，Redis会fork出一个子进程用来同步，在数据量非常大的时候，可能会比较耗时。
+
+RDB：
+set username xingchen
+username -> xingchen
+
+# AOF同步机制
+ps: 只有当RDB同步开启后，再开启AOF同步才会生效，即rdb文件中若未同步值，则aof文件不会同步命令。
+1. 开启和关闭：默认关闭，若要开启，可修改'redis.conf'中的'appendonly yes'
+2. 同步机制：
+	* appendfsync always: 每次有数据更新操作，都会同步到文件中。
+	* appendfsync everysec： 每秒进行一次更新。
+	* appendfsync no: 使用操作系统的方式进行更新。普遍是30s更新一次。（不推荐使用）
+3. 存储内容：存储的是具体的命令，且重写命令。
+	set username a
+	set username b
+	最后只会存储 b的命令
+4. 存储路径：根据'redis.conf'下的'dir'以及'appendfilename'指定。默认是'/var/lib/redis/appendonly.aof'
+5. 优点：
+	* AOF的策略是每秒钟或者每次发生写操作的时候都会同步，因此即使服务器故障，最多只会丢失1s的数据。
+	* AOF存储的是Redis命令，并且是直接追加到aof文件后面，因此每次备份的时候只要添加新的数据。
+	* 如果aof文件大了，那么Redis会进行重写，只保留最小的命令集合。
+6. 缺点：
+	* aof文件没有压缩，因此体积比rdb文件大。
+	* AOF是在每秒或者每次写操作都进行备份，因此如果并发量比较大，效率可能慢于RDB。
+	* aof文件因为存储的是命令，因此在灾难恢复时需要先读取命令，再执行命令，所以速度不及RDB。
+
+AOF:
+set username xingchen
+...
+set
+...
+username
+...
+xingchen
+
+
+# 为Redis设置密码
+首先在'redis.conf'文件下找到'requirepass xxx'
+取消注释，然后设置密码。
+
+1. 登录授权
+redis-cli -p 6379 -h 127.0.0.1 -a password
+2. 登录后授权
+auth password
+
+# 其他机器连接Redis
+若要让其他机器连接本机的redis服务器，在'redis.conf'配置文件中，找到'bind'增加本机地址。

@@ -1,0 +1,39 @@
+if条件判断语句
+
+使用方式：
+{%if age|abs == 21 %}
+    <p>年龄是21岁</p>
+{% else %}
+    <p>年龄不是21岁</p>
+{% endif %}
+
+for循环语句
+ <table>
+        <thead>
+            <tr>
+                {% for key in location.keys() %}
+                    <td>{{ key }}</td>
+                
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                {% for value in location.values() %}
+                    <td>{{ value }}</td>
+                {% else %}
+                    不详
+                {% endfor %}
+                
+            </tr>
+        </tbody>
+    </table>
+
+for循环中else的使用场景：
+例如购物车中，有订单时将所有订单全部遍历出来，无订单时则进入else显示无。
+注意事项：
+跟python语法中的for基本一致，for...in...，同样也可以遍历序列以及迭代器。唯一不同的是’'jinja2'中的for循环没有'break'和'continue'语句。
+
+
+
+

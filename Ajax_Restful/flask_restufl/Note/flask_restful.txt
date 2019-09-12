@@ -1,0 +1,153 @@
+# flask_restful
+1. 从'flask_restful'包导入'Api'、'Resource'类，绑定api对象
+from flask import Flask,url_for
+from flask_restful import Api, Resource
+
+app = Flask(__name__)
+api = Api(app=app)
+
+
+2. 创建Restful视图类，继承自Resource
+class LoginView(Resource):
+	# 定义请求方法
+    # username=None 形参设置为None 可以避免无参url访问404的问题
+    def post(self, username=None):
+        return {'username': username}
+
+3. api对象映射视图与url
+
+# 这里是用绑定app的api对象来调用add_resource()方法
+api.add_resource(LoginView, '/login/<username>/', '/login/', endpoint='login')
+
+# 测试请求，也可以用Postman测试
+with app.test_request_context():
+    print(url_for('login'))
+
+注意事项
+* 如果想返回json数据，那么就使用flask_restful，如果想渲染模板，就采用视图函数app.route('')的方式或是自定义视图类。
+* url同样可以传递参数'/login/<username>/'，和之前不同的是可以传递多个url。
+api.add_resource(LoginView, '/login/<username>/', '/login/', endpoint='login')
+* endpoint用来给url_for反转url时候指定的，如果不写endpoint，默认值为类名的小写。查看源码'Resource.__name__.lower'
+
+
+# 参数验证
+flask_restful插件提供了类似WTForms来验证提交的数据是否合法的包，叫做reqparse。
+
+default: 默认值
+required: 必须提交的
+type: 提交类型
+choices: 只能提交指定值
+help: 错误提示信息
+trim: 去掉传入值的前后空格
+ 
+
+1. 导包
+from flask_restful import reqparse, inputs
+2. 实例化请求解析对象
+parser = reqparse.RequestParser()
+3. 添加参数
+parser.add_argument('username', required=True, type=str, help='用户名验证错误！')
+parser.add_argument('password', required=True, type=str, help='密码验证错误！')
+parser.add_argument('age', type=int, help='年龄必须为整数！')
+# 日期格式为 xxxx-xx-xx
+parser.add_argument('birthday', type=inputs.date, help='您输入的格式不正确！')
+parser.add_argument('telephone', type=inputs.regex(r'1[35678]\d{9}'), help='手机号码输入不正确！')
+
+4. 取出解析后参数
+args = parser.parse_args()
+# {'username': 'xingchen', 'password': '123456', 'age': 90, 'birthday': datetime.datetime(1929, 11, 17, 0, 0), 'telephone': '13844445555'}
+
+type=''参数可以使用python自带的一些数据类型，也可以使用flask_restful.inputs下的一些特定的参数
+# 一些常用的栗子
+inputs.url
+inputs.regex
+inputs.date
+
+# 标准化返回参数
+1. 导包 
+from flask_restful import marshal_with, fields
+2. 定义ORM模型
+# 这里创建了个模型举栗 生产环境中应是ORM模型
+class User(object):
+    def __init__(self, username, gender):
+        self.username = username
+        self.gender = gender
+
+
+user = User('xingchen', 'male')
+
+
+3. Restful视图类中定义字典表示要返回的字段
+
+class LoginView(Resource):
+    resource_fields = {
+        'username': fields.String,
+        'gender': fields.String
+    }
+
+    @marshal_with(resource_fields)
+    def get(self):
+        return user
+
+# 标准化返回参数2
+
+
+
+class ArticleView(Resource):
+
+    resource_fields = {
+    	# attribute="title"相当于将展示给前端接口换个名字
+        "article_title": fields.String(attribute="title"),
+        "article_content": fields.String(attribute="content"),
+        "article_author": fields.Nested({
+            "username": fields.String,
+            "email": fields.String
+        }, attribute="author"),
+        "tags": fields.List(fields.Nested({
+            "id": fields.Integer,
+            "name": fields.String
+        })),
+        # Article表中没有该字段,所以这里可以设置一个default
+        # 阅读量类似的数据一般没必要保存在数据库，所有可以从其他地方获取这个值
+        "read_count": fields.Integer(default=80)
+    }
+
+    @marshal_with(resource_fields)
+    def get(self, article_id):
+        article = Article.query.get(article_id)
+        return article
+
+
+api.add_resource(ArticleView, '/article/<article_id>/', endpoint='article')
+
+
+
+# Flask-restful注意事项：
+1. 在蓝图中，如果使用'flask_restful'，那么在创建'Api'对象的时候，不是有app对象，换做蓝图对象。'article_bp'
+2. 'flask_restful'默认返回数据格式为JSON，如果在'flask_restful'的视图中想要返回'html'代码，或者是模板，那么应该使用'api.representation'这个装饰器来定义一个函数，在这个函数中，应该对'html'代码进行一个封装，再返回，返回对象一定是Response对象
+
+from flask import Blueprint, render_template, Response, make_response
+from flask_restful import Api, Resource, fields, marshal_with
+from models import Article
+
+article_bp = Blueprint('article', __name__, url_prefix='/article')
+api = Api(article_bp)
+
+@api.representation('text/html')
+def output_html(data, code, headers):
+    # print(data)
+    print(code)
+    print(headers)
+    resp = make_response(data)
+    # 必须放回Response对象
+    return resp
+
+
+
+class ListView(Resource):
+    def get(self):
+    	#　返回模板的时候会调用装饰器＇representation＇修饰的方法从而返回resp
+        return render_template('list.html')
+
+
+api.add_resource(ListView, '/list/', endpoint='list')

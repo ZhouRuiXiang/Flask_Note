@@ -1,0 +1,112 @@
+#　ORM关系以及一对多 
+##　在数据库中，通过表的外键在另一个表中查找，较为麻烦。
+## SQLAlchemy提供了一个relationship类，可以定义属性，
+## 在访问相关联的表通过属性就可以访问。
+from sqlalchemy.orm import relationship
+
+class Hero(Base):
+    # 表名
+    __tablename__ = "hero"
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    name = Column(String(50), nullable=False)
+    hp = Column(DECIMAL(5, 0))
+    # skill = relationship("Skill")
+
+class Skill(Base):
+    # 表名
+    __tablename__ = "skill"
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    passive = Column(String(50), nullable=False)
+    skill_name = Column(String(50), nullable=False)
+    Hid = Column(Integer, ForeignKey("hero.id", ondelete="RESTRICT"))
+    # backref属性指定反向访问的属性名称
+    # 相当于在hero表中定义一个skill = relationship("Skill")
+    hero = relationship("Hero", backref="skill")
+# 这两张表之间的关系是1:n hero:skill
+
+
+
+#　表与表之间的关系	
+#　1: 1 一对一
+from sqlalchemy.orm import backref
+class Hero(Base):
+    # 表名
+    __tablename__ = "hero"
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    name = Column(String(50), nullable=False)
+    hp = Column(DECIMAL(5, 0))
+    # my_skill = relationship("Skill", uselist=False)
+class Skill(Base):
+    # 表名
+    __tablename__ = "skill"
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    passive = Column(String(50), nullable=False)
+    Q_ = Column(String(50), nullable=False)
+    W_ = Column(String(50), nullable=False)
+    E_ = Column(String(50), nullable=False)
+    R_ = Column(String(50), nullable=False)
+    Hid = Column(Integer, ForeignKey("hero.id", ondelete="RESTRICT"))
+    # 从sqlalchemy.orm下导入backref方法 uselist属性置为False,默认为True 
+    # 即 Hero().my_skill的类型从InstrumentedList变为NoneType
+    owner = relationship("Hero", backref=backref("my_skill", uselist=False))
+if __name == '__main__':
+	hero = Hero(name="菲兹", hp=570)
+	skill = Skill(passive="伶俐斗士",  Q_="淘气打击", W_="海石三叉戟", E_="古灵/精怪", R_="巨鲨强袭")
+	hero.my_skill = skill
+	session.add(hero)
+	session.commit()
+
+
+#　1: n 一对多
+# 同理，一对多即把uselist置为True, 默认为True，这样主表中连接从表的对象类型将变为InstrumentList，
+# 继承List,可使用append()方法
+hero = Hero(name="菲兹", hp=570)
+skill = Skill(passive="伶俐斗士",  Q_="淘气打击", W_="海石三叉戟", E_="古灵/精怪", R_="巨鲨强袭")
+hero.my_skill.append(skill)
+session.add(hero)
+session.commit()
+#　n: n 多对多
+# 1. 创建需要做多对多关系映射的两个模型
+# 2. 创建一个中间表，一般是两个模型中的主键
+# 3. 选择一个模型，定义一个relationship属性并传入secondary=中间表，连接三个表，
+
+class Hero(Base):
+    __tablename__ = "hero"
+    __tablename__ = "hero"
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    name = Column(String(50), nullable=False)
+    hp = Column(DECIMAL(5, 0))
+
+
+hero_weapon = Table(
+    "hero_weapon",
+    Base.metadata,
+    Column("hero_id", Integer, ForeignKey("hero.id"), primary_key=True),
+    Column("weapon_id", Integer, ForeignKey("weapon.id"), primary_key=True)
+)
+
+
+class Weapon(Base):
+    __tablename__ = "weapon"
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    w_name = Column(String(50), nullable=False)
+    w_price = Column(DECIMAL(5, 0))
+    my_owners = relationship("Hero", backref="my_weapons", secondary=hero_weapon)
+
+
+Base.metadata.drop_all()
+Base.metadata.create_all()
+
+if __name__ == '__main__':
+    weapon_1 = Weapon(w_name="无尽之刃")
+    weapon_2 = Weapon(w_name="饮血剑")
+    hero_1 = Hero(name="亚索")
+    hero_2 = Hero(name="库奇")
+    hero_1.my_weapons.append(weapon_1)
+    hero_1.my_weapons.append(weapon_2)
+
+    hero_2.my_weapons.append(weapon_1)
+    hero_2.my_weapons.append(weapon_2)
+    session.add(hero_1)
+    session.add(hero_2)
+    session.commit()

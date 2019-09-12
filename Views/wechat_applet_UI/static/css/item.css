@@ -1,0 +1,45 @@
+.item_list_group .item_list_top{
+    /*子元素浮动 所以获取不到高度*/
+    overflow: hidden;
+    padding: 10px;
+}
+
+.item_list_group .module_title{
+    float: left;
+}
+
+.item_list_group .more{
+    float: right;
+}
+
+.list_group{
+    overflow: hidden;
+    padding: 0 10px;
+}
+
+.item_group{
+    float: left;
+    margin-right: 10px;
+    margin-bottom: 5px;
+}
+
+.item_group .thumbnail{
+    display: block;
+    width: 100px;
+    height: 150px;
+}
+
+.item_group .item_title{
+    font-size: 12px;
+    text-align: center;
+}
+
+.item_group .item_rating{
+    font-size: 12px;
+    text-align: center;
+}
+
+.item_rating img{
+    width: 10px;
+    height: 10px;
+}

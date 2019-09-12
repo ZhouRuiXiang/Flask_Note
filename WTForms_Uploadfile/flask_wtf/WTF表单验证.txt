@@ -1,0 +1,43 @@
+# WTForms
+# 这个库主要是做表单验证和模板渲染
+# 做表单验证
+1. 自定义一个表单类， 继承自wtfomrs.Form
+from wtforms import Form, StringField
+class RegistForm(Form):
+	# 类属性必须和input标签的name属性保持一致。
+	# 指定验证字段的具体数据类型和限制条件
+    username = StringField(validators=[Length(min=3, max=10, message="用户名必须为3至10个字符")])
+    password = StringField(validators=[Length(min=6, max=10, message="用户名必须为6至10个字符")])
+    repeat_password = StringField(validators=[Length(min=6, max=10, message="用户名必须为6至10个字符"), EqualTo("password", message="两次密码输入不一致")])
+
+2. 调用验证（在视图函数中调用）
+form = RegistForm(request.form)
+    if form.validate():
+        return "注册成功"
+    else:
+        print(form.errors)
+        return "注册失败"
+
+# 常用的验证器
+1. Email()		验证邮箱
+2. EqualTo()	验证两个字段是否相等 一般验证密码
+3. InputRequired	验证必须输入值
+4. Length()		验证长度
+5. NumberRange()	验证数字区间
+6. Regexp()		验证正则表达式
+7. URL()		验证URL
+8. UUID()		验证UUID
+
+# 自定义验证器
+# 定义一个成员方法 以 validate_验证字段名(self, filed) 格式定义方法名，若验证不成功，抛出ValidationEroor 
+from wtforms.validators import Length, EqualTo, ValidationError
+class LoginForm(Form):
+    username = StringField(validators=[Length(min=3, max=10)])
+    password = StringField(validators=[Length(min=6, max=10)])
+    captcha = StringField(validators=[Length(min=4, max=4)])
+
+    def validate_captcha(self, field):
+    	# field.data 可以获取到具体的值
+        if field.data != "asdf":
+            raise ValidationError("验证码错误！")
+

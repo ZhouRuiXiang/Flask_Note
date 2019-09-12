@@ -1,0 +1,38 @@
+{# itemGoup的宏 #}
+{% macro itemGroup(title, thumbnail, rating) %}
+    <div class="item_group">
+        <img src="{{thumbnail}}" class="thumbnail" alt="">
+        <p class="item_title">{{ title[0:8] }}</p>
+        <p class="item_rating">
+            {% set allstars=((rating|int)/2)|int %}
+            {% set halfstars=(rating|int)%2 %}
+            {% set graystars=5-allstars-halfstars %}
+            {% for allstar in range(0,allstars) %}
+                <img src="{{ url_for('static', filename='img/allstar.png') }}" alt="">
+            {% endfor %}
+            {% for halfstar in range(0,halfstars) %}
+                <img src="{{ url_for('static', filename='img/halfstar.png') }}" alt="">
+            {% endfor %}
+            {% for halfstar in range(0,graystars) %}
+                <img src="{{ url_for('static', filename='img/greystar.png') }}" alt="">
+            {% endfor %}
+            {{ rating }}
+        </p>
+    </div>
+{% endmacro %}
+
+{# listGroup的宏 #}
+{% macro listGroup(list_title, items, category)%}
+    <div class="item_list_group">
+        <div class="item_list_top">
+            <span class="module_title">{{ list_title }}</span>
+            <a href="{{ url_for('item_list', category=category) }}" class="more">更多</a>
+        </div>
+        <div class="list_group">
+            {% for d in items[0:3] %}
+                {{ itemGroup(d.title[0:8],d.thumbnail,d.rating) }}
+                {#{{ itemGroup(d.title,"static/img/"+(index|selfadd(1))|string+'.jpg',d.rating) }}#}
+            {% endfor %}
+        </div>
+    </div>
+{% endmacro %}

@@ -1,0 +1,64 @@
+# flask_script
+
+1. 安装flask-script包
+2. 新建manage.py 或 xx_manage.py 文件并导入包
+# manage.py
+from flask_script import Manager
+3. 引入app中的包
+from app import db, app, User
+4. 创建manage对象
+manager = Manager(app)
+# 引入 db_manager.py 中的db_manager对象
+from db_manager import db_manager
+# 将db_manager下的命令以 db 作为子命令 传入 manager
+manager.add_command('db', db_manager)
+
+5. manager.command 创建命令
+使用方式： 在虚拟环境的终端使用 python manager.py greet
+
+@manager.command
+def greet():
+    print("Hello World!")
+
+6. manager.option 创建带选项的命令
+使用方式：在虚拟环境的终端使用 python manager.py -u username -p password
+
+
+# -u 缩写 --username 类似Linux中的命令 别名
+# dest 中的值是传递给下面add_user()中的形参
+@manager.option('-u', '--username', dest='username')
+@manager.option('-p', '--password', dest='password')
+def add_user(username, password):
+    db.session.add(User(username=username, password=password))
+    db.session.commit()
+
+
+# db_manage.py
+from flask_script import Manager
+
+db_manager = Manager()
+
+
+@db_manager.command
+def init():
+    print("迁移仓库创建完毕！")
+
+
+@db_manager.command
+def revision():
+    print("迁移脚本生成成功！")
+
+
+@db_manager.command
+def upgrade():
+    print("脚本映射到数据库成功！")
+
+
+
+
+
+
+
+
+
+

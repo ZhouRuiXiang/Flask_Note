@@ -1,0 +1,20 @@
+def db_init_():
+    Base.metadata.drop_all()
+    Base.metadata.create_all()
+    user1 = User(username="小明", gender=genderEnum.male, age=18)
+    user2 = User(username="小花", gender=genderEnum.female, age=17)
+    user3 = User(username="小黑", gender=genderEnum.male, age=16)
+    user4 = User(username="小兰", gender=genderEnum.female, age=19)
+    user5 = User(username="小胖", gender=genderEnum.male, age=15)
+    session.add_all([user1, user2, user3, user4, user5])
+    session.commit()
+
+
+if __name__ == '__main__':
+    # db_init_()
+    #　having的字段必须包含于在group_by的字段
+    result = session.query(User.age, func.count(User.id)).group_by(User.age).\
+        having(User.age < 18).all()
+    print(result)
+
+

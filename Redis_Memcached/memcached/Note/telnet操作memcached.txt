@@ -1,0 +1,37 @@
+# memcached
+登录语法：'telnet 127.0.0.1[ip地址] 11211[端口号]'
+'memcached'存储数据是以键值对的方式存储。
+
+常用命令
+1. 'set': 在'memcached'中添加一个'key->value'，如果这个'key'已经存在，那么就会替换，否则就是添加。
+set username[key] 0[是否需要压缩] 60[过期时间] 10[字符长度]
+xingchen[value]
+
+2. 'get': 从'memcached'获取一个数据，根据'key'获取。
+get username[key]
+
+3. 'add': 与set功能类似，区别若'memcached'中已经存在'key'，那么就会添加失败（NOT_STORED）
+add username[key] 0[是否需要压缩] 60[过期时间] 10[字符长度]
+xingchen[value]
+
+4. 'delete': 删除一个值
+delete username[key]
+
+5. 'flush_all': 删除'memcached'所有的键值对
+flush_all
+
+6. 'incr': 给'memcached'中的数字类型的值进行相加操作，delta增量必须也为整型增量
+incr age 1
+
+7. 'decr': 与'incr'相反，作减法
+decr age 1
+
+8. 'stats': 查看'memcached' 当前状态
+stats
+* 'get_hit': get命令命中的次数
+* 'get_misses': get命令空了的次数
+* 'curr_items': 当前'memcached'中的键值对的个数
+* 'total_connections': 从'memcached'开启到现在的连接数
+* 'curr_connections': 当前'memcached'的连接数
+* 'memcached'默认最大的连接数为1024
+* 'get_hit' / 'get_hit' + 'get_misses' 这个命中参数比较重要

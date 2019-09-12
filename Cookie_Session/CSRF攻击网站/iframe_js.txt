@@ -1,0 +1,30 @@
+# iframe
+iframe标签相当于是子页面加载，在一个网页中加入另外一个网页，作为子页面。
+<iframe width="0px" height="0px" src="{{ url_for('steal') }}" frameborder="0"></iframe>
+
+
+# jquery
+http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js
+
+<head>
+	<script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+</head>
+
+<body>
+	<script>
+            $(function () {
+                $("#my_form").submit();
+            })
+        </script>
+</body>
+
+
+# CSRF防御
+
+1. Cookie中添加一个csrf_token
+2. 表单中也返回一个相同的csrf_token
+
+
+jquery cdn (jquery content delivery network)
+# 百度搜索 jquery cdn 进去BootCDN
+# 选择最近版本的 jquery.min.js

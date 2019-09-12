@@ -1,0 +1,76 @@
+# 外键的创建
+# 外键的类型必须与主表对应的属性类型一致
+from sqlalchemy import ForeignKey
+class Hero(Base):
+    # 表名
+    __tablename__ = "hero"
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    name = Column(String(50), nullable=False)
+    hp = Column(DECIMAL(5, 0))
+
+class Skill(Base):
+    # 表名
+    __tablename__ = "skill"
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    passive = Column(String(50), nullable=False)
+    Q_ = Column(String(50), nullable=False)
+    W_ = Column(String(50), nullable=False)
+    E_ = Column(String(50), nullable=False)
+    R_ = Column(String(50), nullable=False)
+    Hid = Column(Integer, ForeignKey("hero.id", ondelete="RESTRICT"))
+
+# 外键的四种约束
+1. RESTRICT 若主从表有连接关系，则无法删除，
+MYSQL中默认约束为RESTRICT
+2. NO ACTION 在MYSQL中，与RESTRICT一样
+3. CASCADE 级联删除，删除主表中的行时，有关联的从表中的行也随之删除。
+4. SET NULL 设置为空，删除主表中的行时，从表对应外键设置为NULL。
+# 这里外键的四种约束针对的都是SQL语句中有效，在ORM模型中删除主表中的行，从表中的外键都置为NULL。
+
+
+heroes = [
+    Hero(name="亚索", hp=609),
+    Hero(name="菲兹", hp=570),
+]
+skills = [
+    Skill(passive="浪客之道", Q_="斩钢闪", W_="风之障壁", E_="踏前斩", R_="狂风绝息斩", Hid=1),
+    Skill(passive="伶俐斗士",  Q_="淘气打击", W_="海石三叉戟", E_="古灵/精怪", R_="巨鲨强袭")
+]
+
+session.add_all(heroes)
+session.add_all(skills)
+print(heroes[0], skills[0])
+print(heroes[1], skills[1])
+
+# ORM层面的删除数据注意事项：
+# 外键的四种约束针对的都是SQL语句中有效。
+# 在ORM中，外键约束无论设置为什么，删除主表中的行，从表中的外键都置为NULL。
+# 若要在ORM不允许删除有外键关联的行，可以把外键的nullable设置为False。
+hero1 = session.query(Hero).first()
+hero2 = session.query(Hero).filter(Hero.id == 2).first().
+print(type(hero1))
+print(type(hero2))
+session.delete(hero1)
+session.delete(hero2)
+session.commit()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

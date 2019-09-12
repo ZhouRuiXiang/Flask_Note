@@ -1,0 +1,52 @@
+宏
+
+使用宏可以传递参数，但是不能有返回值
+
+
+定义宏：
+{% macro input(name='', type='text',value='') %}
+        <input type="{{ type }}" name="{{ name }}" value="{{ value }}">
+{% endmacro %}
+
+
+使用宏：
+<table>
+        <tr>
+            <td>用户名：</td>
+            <td>{{ input('username') }}</td>
+        </tr>
+        <tr>
+            <td>密码</td>
+            <td>{{ input('password', type='password') }}</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>{{ input(value='登录', type='submit') }}</td>
+        </tr>
+    </table>
+
+
+
+从'macro.html'文件中导入宏
+导入宏的方式：
+ {% from 'macro.html' import input %}
+
+1. {%from...import ...as ...%}
+
+2. {%import... as...%}
+
+3. 如果想要在导入宏的时候，将当前模板中的变量作为参数传给宏，可以在导入的时候
+用with context 
+from 'xxx.html' import input with context
+ps:宏文件路径，要以'templates'作为绝对路径去寻找。
+
+
+
+
+
+
+
+
+
+
+

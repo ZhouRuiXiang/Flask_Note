@@ -1,0 +1,84 @@
+Jinja2模板过滤器
+
+1. 在模板中对一些变量进行处理，过滤器类似一个函数，把当前的变量传入到过滤器中，过滤器根据自己的功能，返回相应的值，之后再将其渲染到页面中。
+
+2. 基本语法：{{variable|filtername}}。使用管道符号|进行组合
+
+常用过滤器
+
+1. default过滤器
+使用方式 {{value|default过滤器('默认值')}}
+如果value这个'key'不存在，那么就会使用'default'过滤器提供的默认值
+如果这个'key'存在且为空(例如 None, '',[]...)
+则使用方式{{value|default过滤器('默认值', True)}}
+
+也可使用 or 来替代default
+{{value or '默认值'}}
+
+2. 自动转义过滤器
+safe过滤器：可以关闭一个字符串的自动转义
+使用方式：<p>{{ alert|safe }}</p>
+
+escape过滤器：对某一个字符串进行转义
+使用方式：<p>{{ alert|escape }}</p>
+
+autoescape标签：可以对里面的代码块关闭或开启自动转义
+使用方式：{% autoescape off/on %}
+        		<p>{{ alert }}</p>
+    		{% endautoescape %}
+
+3. first/last过滤器
+返回序列第一个/最后一个元素
+
+4. format过滤器
+{{'%s' - '%s'|format('Hello', 'MINA!')}}
+
+5. lenth过滤器
+
+6. join过滤器
+join(value, d=u'')
+将一个序列用d这个参数的值拼接成字符串
+
+7. string过滤器
+
+
+9. replace过滤器
+使用方式	：{{ article|replace("hello", 'hi') }}
+
+10. truncate过滤器
+使用场景：文章标题下的简介文字，例如提取文章前100个文字
+使用方式：{{{{ article|truncate(15, '...') }}}}
+
+11. striptags过滤器
+使用场景：文章标题下的简介文字，例如将主文章中的文字去除标签后再进行truncata提取。
+
+12. wordcount过滤器
+计算字符串中的单词个数
+使用方式：{{ article|wordcount }}
+
+自定义模板过滤器
+'''python'''
+@app.template_filter('strip')
+def strip(value, char):
+    value = value.strip(char)
+    return value
+'''html'''
+<p>{{ article|strip('h') }}</p>
+
+修改配置文件：app.config['TEMPLATES_AUTO_RELOAD'] = True
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

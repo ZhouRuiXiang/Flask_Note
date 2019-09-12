@@ -1,0 +1,55 @@
+# join 实现复杂查询
+# left join、right join、inner join
+
+# 比如要实现一个需求，查找所有用户，按照发表文章的数量来进行排序。
+# 数据初始化
+user1 = User(username="小明", gender=genderEnum.male, age=18)
+for i in range(1):
+    title = "title %s" % i
+    article = Article(title=title)
+    article.author = user1
+    session.add(article)
+user2 = User(username="小花", gender=genderEnum.female, age=17)
+for i in range(1,6):
+    title = "title %s" % i
+    article = Article(title=title)
+    article.author = user2
+    session.add(article)
+user3 = User(username="小黑", gender=genderEnum.male, age=16)
+for i in range(6,9):
+    title = "title %s" % i
+    article = Article(title=title)
+    article.author = user3
+    session.add(article)
+session.add_all([user1, user2, user3])
+session.commit()
+
+
+result = session.query(User.username, func.count(Article.id)).join(Article,
+        User.id==Article.uid).group_by(User.id).order_by(func.count(Article.id).desc()).all()
+    print(result)
+
+#　[('小花', 5), ('小黑', 3), ('小明', 1)]
+
+
+# subquery子查询
+# 有如下需求：查询与小明异性的朋友们的用户名、年龄，且年龄要大于18岁
+SQL：select user.username, user.age from User,(select user.gender from user wehre
+	user.username="小明") as ming where user.gender != ming.gender and user.age > 18
+
+# 普通方法 需要查询两次 效率不高
+ming = session.query(User.gender).filter(User.username=="小明").first()
+result = session.query(User.username, User.age).filter(ming.gender != User.gender, User.age > 18).all()
+print(result)
+# 子查询 性能较优
+# 先写一个查询作为子查询，为查询结果字段设置别名 .label(Alias)
+ming = session.query(User.gender.label("gender")).filter(User.username == "小明").subquery()
+# 调用子查询的字段 .c.Alias c: Column
+result = session.query(User.username, User.age).filter(User.gender != ming.c.gender, User.age > 18).all()
+print(result)
+
+
+
+
+
+

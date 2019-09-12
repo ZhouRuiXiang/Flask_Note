@@ -1,0 +1,45 @@
+# query可用参数
+1. 指定查找这个模型中的对象
+    def __repr__(self):
+        return "<LOL>name:%s" % self.name
+heroes = session.query(LOL).all()
+print(heroes)
+
+2. 指定查找这个模型中的属性，一个或多个属性
+heroes = session.query(LOL.name, LOL.id).first()
+    print(heroes)
+
+3. 聚合函数
+	func.count：统计行的数量
+	heroes = session.query(func.count(LOL.id))
+	func.sum：求和
+	...
+	对应SQL中的聚合函数
+# 条件查询 直接打印session.query(LOL).filter(LOL.id==1)结果为ORM底层转换的SQL语句 即在filter方法后不加任何方法之间返回
+    # equals
+    heroes = session.query(LOL).filter(LOL.id == 1).all()
+    # not equals
+    heroes = session.query(LOL).filter(LOL.id != 2).all()
+    # heroes = session.query(LOL).filter(LOL.id == 2).all()
+    # like
+    heroes = session.query(LOL).filter(LOL.name.like("%aw%")).all()
+    # in
+    heroes = session.query(LOL).filter(LOL.name.in_(["Jiawen IV", "Rui Wen", "Fitz"])).all()
+    # not in
+    heroes = session.query(LOL).filter(LOL.name.notin_(["Jiawen IV", "Rui Wen", "Fitz"])).all()
+    # not in  ~取反
+    heroes = session.query(LOL).filter(~LOL.name.in_(["Jiawen IV", "Rui Wen", "Fitz"])).all()
+    # is null is_
+    heroes = session.query(LOL).filter(LOL.hp.is_(None)).all()
+    # is not null
+    heroes = session.query(LOL).filter(LOL.hp != None).all()
+    # and
+    heroes = session.query(LOL).filter(LOL.hp == None, LOL.id == 2).all()
+    # and and_
+    from sqlalchemy import and_
+    heroes = session.query(LOL).filter(and_(LOL.hp == None, LOL.id == 2)).all()
+    # and 多次filter
+    heroes = session.query(LOL).filter(LOL.hp == None).filter(LOL.id == 2).all()
+    # or or_
+    from sqlalchemy import or_
+    heroes = session.query(LOL).filter(or_(LOL.hp == 1000, LOL.name == "Rui Wen")).all()

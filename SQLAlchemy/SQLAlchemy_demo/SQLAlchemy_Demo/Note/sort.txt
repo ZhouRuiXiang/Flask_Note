@@ -1,0 +1,62 @@
+# 排序
+# order_by: 指定表中的字段进行排序
+字符串前加-表现降序，默认升序
+1. 
+articles = session.query(Article).order_by("-create_time").all()
+2. 
+articles = session.query(Article).order_by(Article.create_time.desc()).all()
+3. 
+ __mapper_args__ = {
+        "order_by": create_time.desc()
+    }
+4. 
+author = relationship("User", backref=backref("my_articles", order_by=title.desc()))
+
+
+
+class User(Base):
+    __tablename__ = "user"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    username = Column(String(50), nullable=False)
+
+
+class Article(Base):
+    __tablename__ = "article"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    title = Column(String(50), nullable=False)
+    # 使用default=datatime.now() 创建的对象时间会一样
+    create_time = Column(DateTime, nullable=False, default=datetime.now)
+    uid = Column(Integer, ForeignKey("user.id"))
+    author = relationship("User", backref=backref("my_articles", order_by=title.desc()))
+    # __mapper_args__ = {
+    #     "order_by": create_time.desc()
+    # }
+
+    def __repr__(self):
+        return "<Article>title: %s, create_time: %s" % (self.title, self.create_time)
+
+
+def db__init__():
+    Base.metadata.drop_all()
+    Base.metadata.create_all()
+
+    user = User(username="小明")
+    article_1 = Article(title="test1")
+    user.my_articles=[article_1]
+    session.add(user)
+    session.commit()
+
+    time.sleep(2)
+    article_2 = Article(title="test2")
+    user.my_articles.append(article_2)
+    session.commit()
+    user = session.query(User).first()
+    print(user.my_articles)
+if __name__ == '__main__':
+    # db__init__()
+    # articles = session.query(Article).order_by("-create_time").all()
+    # articles = session.query(Article).order_by(Article.create_time.desc()).all()
+    user = session.query(User).first()
+    print(user.my_articles)
+
+

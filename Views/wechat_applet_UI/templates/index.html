@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+{% from 'macro.html' import listGroup%}
+{% block title %}首页{% endblock %}
+{% block body %}
+    {{ listGroup('电影', movie, 1) }}
+    {{ listGroup('电视剧', tv, 2) }}
+{% endblock %}

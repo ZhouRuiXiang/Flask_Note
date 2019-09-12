@@ -1,0 +1,87 @@
+# 蓝图作用
+# 模块化项目，关于用户的部分放在user.py下，关于新闻的部分放在news.py下。
+
+# user.app
+from flask import Blueprint
+# url_prefix中的参数：/user/profile 
+# user后不加路径符号 否则会与下面的路由/重复
+user_bp = Blueprint('user', __name__, url_prefix='/user')
+
+
+@user_bp.route('/profile/')
+def my_profile():
+    return '个人中心页面'
+
+@user_bp.route('/settings/')
+def my_settings():
+    return '设置页面'
+
+# app.py
+from flask import Flask
+from blueprints.user import user_bp
+
+
+app = Flask(__name__)
+# 通过register_blueprint()方法将用户蓝图user_bp注册进url映射中
+app.register_blueprint(user_bp)
+app.config.update({
+    'DEBUG': True
+})
+
+@app.route('/')
+def hello_world():
+    return 'Hello World!'
+
+
+if __name__ == '__main__':
+    app.run()
+
+
+# 蓝图中加载模板文件
+# 先在templates文件中寻找指定文件，若未找到，则在指定的文件夹中寻找，
+# 且指定文件夹中可支持绝对路径和相对路径，相对路径源为__name__当前目录下
+# 一般模板文件就放在templates文件夹下
+user_bp = Blueprint('user', __name__, url_prefix='/user', template_folder='test')
+
+
+@user_bp.route('/profile/')
+def my_profile():
+    return render_template('test.html')
+
+# 蓝图中加载静态文件
+# 默认会在static文件夹下查找路径
+# 若未指定statci_folder 则使用 url_for('static')在static文件夹下寻找
+# 若指定了statci_folder 则使用 url_for('蓝图名字.static')到 指定的文件夹下寻找即'test_static'文件夹
+user_bp = Blueprint('user', __name__, url_prefix='/user', static_folder='test_static')
+
+
+# 蓝图中反转Url的注意事项
+# 在不同模板下 app.py中使用url_for反转蓝图需要加蓝图名.视图函数名或endpoint
+@app.route('/')
+def hello_world():
+    print(url_for('user.my_profile'))
+    return render_template('index.html')
+
+# 在蓝图中反转亦是如此
+@user_bp.route('/settings/')
+def my_settings():
+    print(url_for('user.my_profile'))
+    return '设置页面'
+
+# 在模板中反转蓝图亦是如此
+<a href="{{ url_for('user.my_profile') }}">个人中心</a>
+
+# 蓝图实现子域名
+# 在创建蓝图对象的时候，传递一个subdomain的参数
+cms_bp = Blueprint('cms', __name__, subdomain='cms')
+# 在app.py中配置config
+app.config.update({
+    # 'DEBUG': True,
+    'SERVER_NAME': 'baidu.com:5000'
+})
+# 在本地服务器加入域名
+# 修改hosts文件 域名和子域名做映射
+# 127.0.0.1		baidu.com
+# 127.0.0.1		cms.baidu.com
+# ps:IP地址不能有子域名 localhost也不能有子域名 
+# 即cms.127.0.0.1:5000 / cms.localhost

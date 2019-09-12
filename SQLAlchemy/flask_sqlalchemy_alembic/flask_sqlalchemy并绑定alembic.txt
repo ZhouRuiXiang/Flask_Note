@@ -1,0 +1,60 @@
+1. 创建flask项目,导入flask_sqlalchemy, 安装alembic、mysql-connector-python包
+from flask_sqlalchemy import SQLAlchemy
+
+2. 建立config文件并配置好需要的参数及数据库URI
+# config.py
+USERNAME = "root"
+PASSWORD = "286977"
+HOSTNAME = "127.0.0.1"
+PORT = "3306"
+DATABASE = "flask_alembic"
+DB_URI = "mysql+mysqlconnector://%s:%s@%s:%s/%s" % (USERNAME, PASSWORD, HOSTNAME, PORT, DATABASE)
+
+SQLALCHEMY_DATABASE_URI = DB_URI
+SQLALCHEMY_TRACK_MODIFICATIONS = False
+DEBUG = True
+
+3. 用from_object()方法导入配置文件并利用SQLAlchemy类建立数据库对象
+app.config.from_object(config)
+db = SQLAlchemy(app)
+
+4. 建立ORM模型
+class User(db.Model):
+    id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    username = db.Column(db.String(50), nullable=False)
+
+5. 进入虚拟环境，用alembic命令初始化
+#　alembic命令
+almeblic init alembic
+
+
+6. 配置alembic.ini和env.py
+# alembic.int
+sqlalchemy.url = mysql+mysqlconnector://root:286977@localhost/flask_alembic
+
+# env.py
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+import app
+target_metadata = app.db.Model.metadata
+
+7. 建立迁移脚本和更新数据到最新迁移脚本
+
+alembic revision --autogenerate -m "迁移脚本注释信息"
+
+alembic upgrade head
+
+
+
+
+
+
+
+
+
+
+
+
+
+

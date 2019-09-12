@@ -1,0 +1,81 @@
+# -*- coding: utf-8 -*-#
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+import _mysql_connector
+app = Flask(__name__)
+
+USERNAME = "root"
+PASSWORD = "286977"
+HOSTNAME = "127.0.0.1"
+PORT = "3306"
+DATABASE = "flask_db"
+# 1. 依旧是定义DB_URI
+# mysql5.7的BUG 为避免1366warning
+# 这里将driver 由原来的 pymysql 换成mysql_connector 需要安装包 mysql-connector-python
+# dialect+driver://username:password@host:port/database?charset=utf8
+DB_URI = "mysql+mysqlconnector://{username}:{password}@{host}:{port}/{db}?charset=utf8"\
+    .format(username=USERNAME, password=PASSWORD, host=HOSTNAME, port=PORT, db=DATABASE)
+# 2. 将DB_URI update到app.config里，key是 SQLALCHEMY_DATABASE_URI
+app.config.update(
+    {
+        "debug": True,
+        "SQLALCHEMY_DATABASE_URI": DB_URI,
+        "SQLALCHEMY_TRACK_MODIFICATIONS": False
+    }
+)
+
+
+db = SQLAlchemy(app)
+
+
+# 3. 创建ORM模型
+class User(db.Model):
+    # 明言胜于暗喻
+    # 这里如果不写__tablename__ 也可以，在数据库中将会把类名.lower()化作数据名，
+    # 若采用驼峰法命名，则由UserTest -> user_test
+    # 采用驼峰法命名后，外键连接要变成 user_test.id 明言胜于暗喻，尽量定义__tablename__
+    __tablename__ = "user"
+    id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    username = db.Column(db.String(50), nullable=False)
+
+    def __repr__(self):
+        return "<User>{}".format(self.username)
+
+class Article(db.Model):
+    __tablename__ = "article"
+    id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    title = db.Column(db.String(50), nullable=False)
+    content = db.Column(db.Text)
+    uid = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+
+    autohor = db.relationship("User", backref=db.backref("my_articles"))
+
+
+# db.drop_all()
+# db.create_all()
+# 添加数据
+# user = User(username="xingchen")
+# article = Article(title="Hello World!", uid=1)
+# article.autohor = user
+# db.session.add(article)
+# db.session.commit()
+# 查询数据
+# 在 session.query(tablename) == Cls.query
+users = User.query.order_by(User.id.desc()).all()
+# 修改数据
+user = User.query.filter(User.id == 1).first()
+user.username = "star"
+db.session.commit()
+# 删除数据
+user = User.query.filter(User.id == 2).first()
+db.session.delete(user)
+db.session.commit()
+
+
+@app.route('/')
+def hello_world():
+    return 'Hello World!'
+
+
+if __name__ == '__main__':
+    app.run()

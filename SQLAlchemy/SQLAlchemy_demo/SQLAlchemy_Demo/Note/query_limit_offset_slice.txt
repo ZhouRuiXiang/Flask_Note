@@ -1,0 +1,16 @@
+# limit、offset、slice操作
+
+1. limit: 可以限制查询数据的条数
+limit(num)
+
+
+2. offset： 可以设置查询数据的偏移量，即从第几条开始查询
+offset(num)
+3. slice: 可以对Query对象进行切片操作，与python基本数据类型的切片操作一样
+slice(start, stop).all() 或 [start, stop, step] 推荐后者
+
+# 逆序从第五条数据开始拿，一共拿10条
+article = session.query(Article).order_by(Article.id.desc()).limit(10).offset(5).all()
+
+# 逆序反向查询前5条偶数号数据 即顺序查询偶数号前5条数据
+article = session.query(Article).order_by(Article.title.desc())[: 10: -2]

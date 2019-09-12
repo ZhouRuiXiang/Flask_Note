@@ -1,0 +1,87 @@
+# -*- coding: utf-8 -*-#
+
+#　使用SQLAlchemy连接数据库，将配置信息组成一个字符串。
+
+# 连接数据库之前先要创建数据库
+from sqlalchemy import create_engine
+
+HOSTNAME = "127.0.0.1"
+PORT = "3306"
+DATABASE = "first_sqlalchemy"
+USERNAME = "root"
+PASSWORD = "286977"
+
+# dialect+driver://username:password@host:port/database
+DB_URI = "mysql+pymysql://{username}:{password}@{host}:{port}/{database}?charset=utf8"\
+            .format(username=USERNAME,password=PASSWORD,host=HOSTNAME,port=PORT,database=DATABASE)
+
+# 连接数据库
+engine = create_engine(DB_URI,echo=True)
+
+# 判断是否连接成功
+conn = engine.connect()
+result = conn.execute("select 1")
+print(result.fetchone())
+
+# 使用原生SQL语句
+# 使用with语句连接数据库，若发生异常会被捕获
+with engine.connect() as conn:
+    # 若存在users表，先删除
+    conn.execute("drop table if exists users")
+    # 创建users表
+    conn.execute("create table users(id int primary KEY  auto_increment,"
+                 "name varchar(25))")
+    # 插入三条数据
+    conn.execute("insert into users (name ) values ('Elijah')")
+    conn.execute("insert into users (name ) values ('Rebeka')")
+    conn.execute("insert into users (name ) values ('Klaus')")
+
+    # 查询
+    result = conn.execute("select * from users")
+    for row in result:
+        print(row)
+
+# ORM(Obkect Relational Mapping)介绍
+# 对象模型与数据包的映射
+# 通过把表映射成类，把行作实例，把字段作为属性。ORM在执行对象操作的时候
+# 最终还是会把对应的操作转换成数据库原生语句。
+# ORM的特点：
+1. 易用性，使用ORM做数据库开发可以有效的减少重复的SQL语句，写出来的模型
+更加直观清晰。
+2. 性能损耗小
+3. 设计灵活，可以轻松写出复杂的查询。
+4. 可移植性，SQLAlchemy封装了数据库的实现，支持多个关系数据库引擎，包括
+MYSQL、PostgreSQL、SQLite。
+
+# 将ORM模型映射到数据库中
+from sqlalchemy import create_engine, Column, Integer, String
+from sqlalchemy.ext.declarative import declarative_base
+
+HOSTNAME = "127.0.0.1"
+PORT = "3306"
+DATABASE = "first_sqlalchemy"
+USERNAME = "root"
+PASSWORD = "286977"
+
+# dialect+driver://username:password@host:port/database
+DB_URI = "mysql+pymysql://{0}:{1}@{2}:{3}/{4}?charset=utf8".format(
+    USERNAME, PASSWORD, HOSTNAME, PORT, DATABASE
+)
+engine = create_engine(DB_URI)
+# 用declarative_base根据engines构造一个ORM基类
+Base = declarative_base(engine)
+# 1. 创建一个ORM模型，这个ORM模型必须继承自Base基类
+class Person(Base):
+    # 定义表名
+    __tablename__ = "person"
+    # 2. 在ORM模型中定义一些属性，跟表中的字段作映射。这些属性必须是sqlalchemy提供的数据类型
+    # 所有需要映射到表中的属性都应该为Column类型
+    id = Column(Integer,primary_key=True)
+    name = Column(String(50))
+    age = Column(Integer)
+# 3. 将创建好的数据模型映射到数据库中
+Base.metadata.create_all()
+
+
+
+

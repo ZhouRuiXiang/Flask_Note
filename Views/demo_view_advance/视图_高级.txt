@@ -1,0 +1,211 @@
+# 视图高级笔记：
+
+def add_url_rule(
+        self,
+        rule,
+        endpoint=None,
+        view_func=None,
+        provide_automatic_options=None,
+        **options
+    ):
+'''这个方法用来添加url与视图函数的映射，如果endpoint为空，默认使用
+	view_func的名字作为endpoint。
+	在使用url_for的时候看是否传递endpoint参数，传递则使用指定字符串，
+	否则使用view_func的名字。
+
+'''
+
+app.route(rule, **options)装饰器：
+'''
+	装饰器的底层也是使用 add_url-rule来实现url与视图函数的映射
+'''
+
+
+# 类视图
+# 标准类视图
+# 类视图的优点：
+# 利用继承，将具有共性的东西抽取出来放入父视图
+
+# 使用方式：
+# 1. 标准类视图，必须继承自'flask.views.View'
+# 2. 必须实现'dispatch_request'方法，以后请求过来后，
+# 就会执行这个方法，该方法的返回值与视图函数一样，也必须
+# 返回'Response'或子类的对象或字符串或元组
+# 3. 必须通过'app.add_url_rule(rule, endpoint, view_func)'
+# 来做url与视图的映射。'view_func'这个参数，需要使用类视图下的
+# 'as_view'类方法转换。
+# 4. 如果指定了'endpoint'，必须使用'endpoint'指定的名字。
+
+class ListView(views.View):
+    """
+    标准类视图必须继承自Flask包下的views文件下的View类
+    """
+    def dispatch_request(self):
+        """
+        必须要实现的方法
+        :return:同视图函数的返回值一样
+        """
+        return '我是视图函数'
+# endpoint: 这个/list/路径的名字
+# as_view()类方法中指定的参数: 视图函数的名字
+app.add_url_rule('/list/', endpoint='my_list', view_func=ListView.as_view('list'))
+with app.test_request_context():
+    # url_for()的第一个参数: 若endpoint不为None则必须使用指定值，
+    # 否则应使用视图函数的名字
+    print(url_for('my_list'))
+    
+# 案例1
+# 将字典转化成json字符串
+
+class JSONView(views.View):
+    def get_date(self):
+        raise NotImplementedError
+
+    def dispatch_request(self):
+        return jsonify(self.get_date())
+    
+    
+class ListView(JSONView):
+    def get_date(self):
+        return {'Mark': 19, 'Tony': 20}
+
+
+app.add_url_rule('/list/', view_func=ListView.as_view('list'))
+
+# 案例2
+# 将一个广告 抽出来单独作为一个类视图，以供其他类视图继承
+
+class AdvertiseView(views.View):
+    def __init__(self):
+    	# 重写父类的初始化方法后，显式地调用父类的初始化方法 
+    	# 通过查看源码发现View类继承的object未重写初始化方法 所以此行代码可省略
+        super(AdvertiseView, self).__init__()
+        self.context = {
+            'advertise': 'ICBC，爱存不存'
+        }
+
+
+class RegistView(AdvertiseView):
+    def dispatch_request(self):
+        self.context.update({
+            'name': '中国工商银行'
+        })
+        self.context['advertise'] = '想存就存'
+        return render_template('regist.html', **self.context)
+
+
+class LoginView(AdvertiseView):
+    def dispatch_request(self):
+        return render_template('login.html', **self.context)
+
+
+app.add_url_rule('/regist/', view_func=RegistView.as_view('regist'))
+app.add_url_rule('/login/', view_func=LoginView.as_view('login'))
+
+
+# 基于请求方法的类视图
+# 首先继承"views.MethodView类"
+# 根据请求的'method'来执行不同的方法
+http_method_funcs = frozenset(
+    ["get", "post", "head", "options", "delete", "put", "trace", "patch"]
+)
+
+"""python"""
+class LoginView(views.MethodView):
+    def __render(self, error=None):
+        return render_template('login.html', error=error)
+
+
+    def get(self):
+        return self.__render()
+
+    def post(self):
+        username = request.form.get('username')
+        password = request.form.get('password')
+        if username == '星辰' and password == '123456':
+            return '登录成功'
+        else:
+            return self.__render(error='用户名或密码错误！')
+
+
+app.add_url_rule('/login/', view_func=LoginView.as_view('login'))
+
+
+"""html"""
+<form action="" method="post">
+    <table>
+        <tbody>
+            <tr>
+                <td>用户名：</td>
+                <td><input type="text" name="username" value=""></td>
+            </tr>
+            <tr>
+                <td>密码：</td>
+                <td><input type="password" name="password" value=""></td>
+            </tr>
+            <tr></tr>
+            <tr>
+                <td></td>
+                <td><input type="submit" name="submit" value="立即登录"></td>
+            </tr>
+        </tbody>
+    </table>
+    {% if error %}
+        <p style="color: red">{{ error }}</p>
+    {% endif %}
+</form>
+
+# 若要使用装饰器 视图函数来实现
+
+@app.route('/')
+def hello_world():
+	if request.method == 'get':
+    	return render_template('login.html')
+    else:
+    	# post方法的代码
+    	pass
+
+
+# 装饰器修饰 视图类
+
+def login_required(f):
+	"""定义一个修饰登录请求的装饰器"""
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        username = request.args.get('username')
+        if username and username == '星辰':
+            return f(*args, **kwargs)
+        else:
+            return '请先登录'
+    return wrapper
+
+# 1. 类视图
+class ProfileView(views.View):
+    decorators = [login_required]
+
+    def dispatch_request(self):
+        return '个人中心页面'
+
+
+app.add_url_rule('/profile/', view_func=ProfileView.as_view('profile'))
+
+# 2. 视图函数
+# 定义的装饰器一定要写在路由装饰器的下面
+# 原理： 写在上面时，访问/settings/就会路由到settings页面 装饰器失去作用
+# login_required(app.route('/settings/')(settings))
+# ==
+# @login_required
+# @app.route('/settings/')
+
+# app.route('/settings/')(login_required(settings))
+# ==
+# @app.route('/settings/')
+# @login_required
+@app.route('/settings/')
+@login_required
+def settings():
+    return '设置页面'
+
+
+
+

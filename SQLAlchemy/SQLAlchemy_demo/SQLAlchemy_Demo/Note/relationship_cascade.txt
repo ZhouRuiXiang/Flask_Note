@@ -1,0 +1,53 @@
+以下皆为表与表之间的级联关系
+1. save-update 		默认选项
+在添加一条数据的时候，与之相关的数据都会添加到数据库中。
+2. delete 			删除   只限于1：n的关系
+当删除一个模型中的数据时，也删除与之相关的数据
+3. delete-orphan	删除置为空的行	只限于1：n的关系
+当一个ORM对象解除了主表中的关联对象的时候，比如外键置为NULL，自己也会被删除。
+当然主表中的数据被删除时，它自身也会被删除，并且需要在子模型中relationship增加
+single_parent=True 的参数 这个选项只能用在一对多上，不能用在多对一以及多对多上。
+4. merge 			默认选项
+当在使用session.merge() 合并一个对象的时候，会将relationship关联的对象也作合并操作。
+5. expunge 			移除		
+同样是级联移除，不过这个操作只是从session中移除，并不会真正的从数据库中移除。
+6. all 对 save-update、merge、refresh-expire、expunge、delete几种的缩写
+
+# 实际开发中会很少用 
+
+# 在表与表之间利用 relationship() 建立关系时，可以传入cascade() 进行级联更新或级联删除
+# 参数用逗号隔开
+# cascade="save-update,delete"
+class User(Base):
+    __tablename__ = "user"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    username = Column(String(50), nullable=False)
+    # my_article =relationship("Article", cascade="save-update,delete")
+
+
+class Article(Base):
+    __tablename__ = "article"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    title = Column(String(50), nullable=False)
+    uid = Column(Integer, ForeignKey("user.id", ondelete="CASCADE"))
+    author = relationship("User", backref=backref("my_articles", cascade="save-update,delete"), 
+    	cascade="save-update,delete")
+
+
+class Comments(Base):
+    __tablename__ = "comment"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    content = Column(Text, nullable=False)
+    uid = Column(Integer, ForeignKey("user.id", ondelete="CASCADE"))
+
+    author = relationship("User", backref=backref("my_comments"))
+
+
+
+# 上面三个表中，user分别与article和comment表有关系，皆为1: n。
+# 其中user表与articleb表互为级联更新和级联删除。当删除主表中的user实例，
+# 即数据库中主表的某一行时，从表article中的关联行一起被删除，而从表comment只会将外键置为NULL。
+# 个人理解：ForeignKey()中ondelete，四种外键约束只对SQL有效，
+# 在ORM层面，只要两种情况：
+# 1. nullable=True(默认情况) 主表删除关联行，从表外键置为NULL
+# 2. nullable=False 从表中的行有外键关联，不允许主表删除行。

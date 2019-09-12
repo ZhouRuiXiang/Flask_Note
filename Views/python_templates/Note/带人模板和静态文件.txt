@@ -1,0 +1,40 @@
+'inclue'标签可以将其他模板导入
+1. 需要复用的模板直接导入，可以理解为将指定模板中的代码直接粘贴到当前模板
+所以当前模板的变量也可以使用 不需要 'with context'
+
+2. 使用场景：网页上的导航栏和页尾，可以直接导入。
+
+3. 使用方式：
+{% include 'header_footer/header.html' %}
+{% include 'header_footer/footer.html' %}
+
+'set'语句和'with'语句
+
+1. 'set' 语句是在模板中设置全局变量
+
+2. 使用方式：
+{% set university='武汉东湖学院' %}
+
+<h1>{{ university }}</h1>
+3. 'with'语句是在在模板中设置局部变量
+
+
+4. 使用方式：
+{% with university = '武汉东湖学院' %}
+   	<h1>{{ university }}</h1>
+{% endwith %}
+
+{% with %}
+	{% set university='武汉东湖学院' %}
+   	<h1>{{ university }}</h1>
+{% endwith %}
+
+
+导入静态文件
+
+1. 使用场景：导入css、js、img文件
+2. 使用方式：
+
+<link rel="stylesheet" href="{{ url_for('static', filename="css/index.css") }}" >
+<script src="{{ url_for('static', filename="js/index.js") }}"></script>
+<img src="{{ url_for('static', filename="img/羽毛球001 073.jpg") }}" alt="" >

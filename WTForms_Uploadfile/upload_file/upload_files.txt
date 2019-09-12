@@ -1,0 +1,76 @@
+# upload and show
+1. 在模板的form表单中，需要指定enctype属性
+<form action="" method="post" enctype="multipart/form-data">
+<td><input type="file" name="picture"></td>
+
+2. 利用request.files.get()获取文件
+from werkzeug.utils import secure_filename
+@app.route('/upload/', methods=["GET", "POST"])
+def upload_file():
+    if request.method == "GET":
+        return render_template("upload.html")
+    else:
+        desc = request.form.get("description")
+        pic = request.files.get("picture")
+        # 对中文不太友好，若文件名为全中文，则符号'.'会消失
+        # 栗子：捕获.png -> png
+        # 利用secure_filename方法防止 /../../bashrc 防止传入恶意文件名 来替换系统文件
+        filename = secure_filename(pic.filename)
+        pic.save(os.path.join(UPLOAD_SAVE, filename))
+        print(desc)
+        return "文件上传成功"
+
+
+3. 展示图片
+from flask import send_from_directory
+@app.route('/images/<filename>/')
+def get_image(filename):
+    return send_from_directory(UPLOAD_SAVE, filename)
+
+# 对上传文件使用表单验证
+# forms.py
+1. 文件字段的类型是 FileField
+2. 文件的验证器从 flask_wtf.file导入
+3. FileAllowed 表示验证上传文件的后缀名 FillRequired 表示验证必须上传文件
+from flask_wtf.file import FileAllowed, FileRequired
+from wtforms import Form, FileField, StringField
+from wtforms.validators import InputRequired
+
+
+class UploadForm(Form):
+    # 命名要和模板文件中name一致
+    picture = FileField(validators=[FileRequired(), FileAllowed(['jpg', 'png', 'gif'])])
+    description = StringField(validators=[InputRequired()])
+
+4. 在同时验证文件和输入内容时，需要导入 werkzeug.datastructures.CombinedMultDict
+将request.form和request.files合并。再传给表单验证。
+from werkzeug.datastructures import CombinedMultiDict
+form = UploadForm(CombinedMultiDict([request.form, request.files]))
+
+5. 两种方式皆可
+# desc = request.form.get("description")
+desc = form.description.data
+# pic = request.files.get("picture")
+pic = form.picture.data
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

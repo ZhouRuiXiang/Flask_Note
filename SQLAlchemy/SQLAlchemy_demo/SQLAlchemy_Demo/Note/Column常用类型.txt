@@ -1,0 +1,106 @@
+# Column常用类型
+1. Integer： 整数类型
+映射到数据库int
+id = Column(Integer,primary_key=True,autoincrement=True)
+
+2. Float: 单精度浮点数类型
+映射到数据库32为浮点数
+price = Column(Float)
+
+3. Double： 双精度浮点数类型
+映射到数据库64为浮点数
+price = Column(Double)
+
+4. Decimal(precision, scale): 定点（十进制）类型
+映射到数据库为数字字符串，解决浮点数精度问题
+存储为多位数据，例如银行系统的金额。
+precision: 精确的总位数
+scale: 小数点后的位数
+price = Column(DECIMAL(8, 6))
+
+
+5. Boolean: 布尔类型
+映射到数据库为tinyint类似
+6. Enum：枚举类型
+指定某个字段必须为指定额值，不能为其他的值
+python中内置了enum这个模块，可以使用enum来定义字段，增加代码可读性
+
+import enum
+# 设置一个枚举类
+class BankTypeEnum(enum.Enum):
+    CCB = "CCB"
+    ABC = "ABC"
+    ICBC = "ICBC"
+class Bank_save(Base):
+    # 定义表名
+    __tablename__ = "bank_save"
+    id = Column(Integer,primary_key=True,autoincrement=True)
+    # 传入枚举类
+    card_type = Column(Enum(BankTypeEnum))
+# 引用枚举类的类成员
+data = Bank_save(card_type=BankTypeEnum.CCB)
+
+7.Date: 日期年月日，可以传递datetime.date
+映射到数据库为date
+from datetime import date
+create_time = Column(Date)
+data = Bank_save(create_time=date(2019, 8, 2))
+
+8.DateTime: 日期年月日小时分钟秒,可以传递datetime.datetime
+对应datetime.datetime类
+from datetime import datetime
+...
+...
+
+9.Time: 小时分钟秒，可以传递datetime.time
+对应datetime.time类
+from datetime import time
+...
+...
+
+10. String(length): 字符串类型
+映射到数据库为varchar，需要设置字符串长度
+
+11. Text: 文本类型
+映射到数据库为text，一般可以存储6W多个字符
+from datetime import Text
+
+12. LONGTEXT: 长文本类型
+映射到数据库为longtext类型，只存在与MYSQL数据库中的数据类型
+from sqlalchemy.dialects.mysql import LONGTEXT
+
+
+# Column常用参数
+1. primary_key: 设置某个字段为表的主键
+2. autoincrement: 设置某个字段为自动增长
+3. default: 设置某个字段的默认值，default后可以传入函数等。
+class Book(Base):
+    # 定义表名
+    __tablename__ = "book"
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    create_time = Column(DateTime, default=datetime.now())
+
+    def __init__(self, create_time = None):
+        self.create_time = create_time
+
+4. nullable: 设置某个字段是否为空，默认为True，即可以为空
+description = Column(String(100), nullable=False)
+
+5.unique: 指定某个字段的值是唯一。默认为False,即不唯一。
+
+6. onupdate: 在数据更新的时候会调用这个参数的值或者函数，第一次插入数据时不会调用。
+常用的是"update_time"
+update_time = Column(DateTime, default=datetime.now(), onupdate=datetime.now())
+# 创建数据
+Base.metadata.create_all()
+book = Book("abcd")
+session.add(book)
+# 查询并修改数据
+book = session.query(Book).first()
+book.description="aaa"
+
+7.name: 指定ORM模型中某个属性映射到数据表中的字段名，若不指定，默认使用属性名作为表的字段名。
+这个参数也可作位置参数，在第一个参数指定。
+# 两种用法都可以
+description = Column("描述", String(100), nullable=True)
+description = Column(String(100), name="描述", nullable=True)

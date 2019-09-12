@@ -1,0 +1,86 @@
+# signal
+
+
+# 定义信号
+pip 安装 blinker包
+from blinker import Namespace
+# 定义命名空间，用于装信号量
+namespace = Namespace()
+namespace.signal()
+
+# 定义名为'login'的信号量
+login_signal = namespace.signal('login')
+
+# 监听信号
+# 监听且形参必须传入sender和发送端传入的参数
+def login_log(sender, username):
+    ip = request.remote_addr
+    now = datetime.now()
+    log_line = '{username}*{now}*{ip}'.format(username=username, now=now, ip=ip)
+    with open('signal_demo\login_logs.txt', 'a')as f:
+        f.write(log_line+"\n")
+
+
+login_signal.connect(login_log)
+
+
+@app.route('/login/')
+def login():
+    username = request.args.get('username')
+    if username:
+    	# 发送信号，并携带username
+        login_signal.send(username=username)
+        return '登录成功！'
+    else:
+        return '请输入用户名！'
+
+
+
+
+# Flask_signal
+# 常见的信号
+# Flask底层已经将send信号做好了 我们只需要做监听部分
+1. 模板渲染完成后的信号
+template_rendered = _signals.signal('template-rendered')
+2. 模板渲染之前的信号	
+before_render_template = _signals.signal('before-render-template')
+3. 模板开始渲染的信号
+request_started = _signals.signal('request-started')
+4. 模板渲染完成的信号
+request_finished = _signals.signal('request-finished')
+5. request对象被销毁的信号
+request_tearing_down = _signals.signal('request-tearing-down')
+6. 视图函数发生异常的信号，一般可以监听这个信号，来记录网站异常信息。
+got_request_exception = _signals.signal('got-request-exception')
+7. app上下文被销毁的信号
+appcontext_tearing_down = _signals.signal('appcontext-tearing-down')
+8. app上下文被推入栈上的信号
+appcontext_pushed = _signals.signal('appcontext-pushed')
+9. app上下问出栈的信号
+appcontext_popped = _signals.signal('appcontext-popped')
+10. 调用了Flask的'flashed'方法的信号
+message_flashed = _signals.signal('message-flashed')
+
+# For example
+def template_rendered_func(sender, template, context):
+    print("sender: ", sender)
+    print("template: ", template)
+    print("context: ", context)
+
+
+template_rendered.connect(template_rendered_func)
+# *args **kwargs 因为不知道发送了哪些参数 这样做可以打印所有的参数。
+def request_exception_log(sender, *args, **kwargs):
+    # 可以保存异常的log
+    print("sender: ", sender)
+    print(args)
+    print(kwargs)
+
+got_request_exception.connect(request_exception_log)
+
+
+
+
+
+
+

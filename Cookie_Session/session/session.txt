@@ -1,0 +1,63 @@
+# session
+1. session是一个概念，一种思路，为解决cookie存储信息不安全的一种解决办法，不同语言实现方式不同，但其目的都是一样的。
+2. session与cookie的结合使用
+* session存储在服务器端：服务器端可以采用Mysql、redis、memcached等来存储session信息。原理是客户端发送验证信息过来，（比如用户名和密码）服务器验证成功后，把用户的相关信息存储到session中，然后随机生成一个唯一的session_id，再把这个session_id存储到cookie中返回给浏览器。浏览器再从cookie中提取session_id，然后从服务器的session容器中找到这个用户的相关信息。这样就可以达到安全识别用户的需求了。
+* session存储到客户端（浏览器）：原理是，客户端发送验证信息过来（比如用户名和密码）。服务器把相关的验证信息进行一个非常严格和安全的加密方式进行加密，然后再把这个加密后的信息存储到cookie，返回给浏览器。以后浏览器再请求服务器的时候，就会自动的把cookie发送给服务器，服务器拿到cookie后，就从cookie找到加密的那个session信息。
+
+# flask操作session
+# 导包及配置
+from flask import Flask, session
+import os
+from datetime import timedelta
+app = Flask(__name__)
+app.config.update({
+    'SECRET_KEY': os.urandom(24),
+    # 将session到期时间设置为2天后
+    'PERMANENT_SESSION_LIFETIME': timedelta(days=2)
+})
+1. 设置session: 通过'flaks.session'操作session，类似操作字典。若没有设置session有效期，默认关闭浏览器后过期。
+@app.route('/')
+def index():
+    # 设置session
+    session['username'] = 'xingchen'
+    # permanent 持久化
+    # session.permanent = True 默认时间为31天
+    session.permanent = True
+    return 'Hello World!'
+2. 获取session
+@app.route('/get_session/')
+def get_session():
+    username = session.get('username')
+    return username or "没有获取到session"
+3. 删除session
+* del session['key']
+* session.pop('key')
+* session.clear()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

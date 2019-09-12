@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+{% from 'macro.html' import input %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>武汉东湖学院</title>
+
+{#    加载静态文件#}
+{#    <link rel="stylesheet" href="{{ url_for('static', filename="css/index.css") }}" >#}
+{#    <script src="{{ url_for('static', filename="js/index.js") }}"></script>#}
+</head>
+<body>
+{#    {{ 用来存放变量 }}#}
+{#    {% 用来执行函数或者逻辑代码 %}#}
+    {% include 'header_footer/header.html' %}
+    <div class="content">
+        <br>
+{#        类似设置全局变量#}
+        {% set university='武汉东湖学院' %}
+
+{#        {% with university = '武汉东湖学院' %}#}
+{#            类似设置局部变量#}
+{#            <h1>{{ university }}</h1>#}
+{#        {% endwith %}#}
+        
+        <h1>{{ university }}</h1>
+        
+
+        <table>
+            <tr>
+                <td>用户名：</td>
+                <td>{{ input('username') }}</td>
+            </tr>
+            <tr>
+                <td>密码</td>
+                <td>{{ input('password', type='password') }}</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>{{ input(value='登录', type='submit') }}</td>
+            </tr>
+        </table>
+        <p><a href="{{ url_for('my_login', test='abc', id=1) }}">登录</a> </p>
+    </div>
+{#  加载静态文件#}
+    <img src="{{ url_for('static', filename="img/羽毛球001 073.jpg") }}" alt="" >
+
+    {% include 'header_footer/footer.html' %}
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+

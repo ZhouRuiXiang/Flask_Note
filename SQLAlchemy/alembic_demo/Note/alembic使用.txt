@@ -1,0 +1,84 @@
+1. 连接数据库，创建模型
+# models.py
+from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Enum
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship, sessionmaker
+
+USERNAME = "root"
+PASSWORD = "286977"
+HOST = "127.0.0.1"
+PORT = "3306"
+DATABASE = "alembic_demo"
+DB_URI = "mysql+pymysql://{0}:{1}@{2}:{3}/{4}?charset=utf8mb4".format(USERNAME, PASSWORD, HOST, PORT, DATABASE)
+engine = create_engine(DB_URI)
+Base = declarative_base(bind=engine)
+# ORM模型 -> 迁移脚本（中间件） -> 映射到数据库中
+
+
+class User(Base):
+    __tablename__ = 'user'
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    username = Column(String(20), nullable=False)
+    gender = Column(Enum("male", "female"))
+
+
+class Article(Base):
+    __tablename__ = 'article'
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    title = Column(String(50), nullable=False)
+    uid = Column(Integer, ForeignKey("user.id"), nullable=False)
+    author = relationship("User", backref="my_articles")
+
+2. 修改配置文件
+# alembic.ini
+sqlalchemy.url = mysql+pymysql://root:286977@localhost/alembic_demo?charset=utf8
+
+# env.py
+# models文件属于项目文件夹下的文件，models文件不是主运行文件，所有不能直接导入
+# alembic_demo -> models.py
+# alembic_demo -> alembic -> env.py
+import sys, os
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+import models
+
+3. workon virtualenv 终端进入虚拟环境或pycharm 进入terminal
+
+生成迁移脚本：
+alembic revision --autogenerate -m "注释信息"
+生成的脚本映射到数据库：
+alembic upgrade/downgrade head
+
+若要修改ORM模型，只需重新生成迁移脚本并映射到数据库即可。
+
+4. alembic命令和参数解释：
+# alembic命令在终端上（安装有alembic包的虚拟环境）执行
+* init: 创建一个alembic 仓库。
+* revision: 创建一个新的版本文件。
+* --autogenerate: 自动将当前模型的更改，生成迁移脚本。
+* -m: 描述本次迁移做了哪些修改，用户可以指定这个参数，方便回顾。
+* upgrade： 将指定版本的迁移文件映射到数据库中，会执行版本文件中的upgrade函数。
+如果有多个迁移脚本没有被映射到数据库中，那么会执行多个迁移脚本。
+* [head]: 代表最新的迁移脚本的脚本号。
+* downgrade: 会执行指定脚本的迁移文件中的downgrade函数
+* heads: 展示head指向的脚本文件版本号。
+* history: 列出所有的迁移版本及其信息。
+* current: 展示当前数据库中的版本号。
+第一次upgrade时，就会在数据库中创建一个名为alembic_version的表，里面之存储了一条数据，
+记录当前数据库映射的是哪个版本的迁移文件。
+
+5. 经典错误
+* FALED: Target database is not up to date.
+原因：heads和current不相同，current落后于heads的版本
+解决方法：alembic upgrade head 就current移动到head上
+* FAILED: Can't locate revision identified by  'revision_id'
+原因： 数据库中存的版本号不在迁移脚本中
+解决方法： 删除数据库的alembic_version表中数据，重新执行alembic upgrade head
+* 执行alembic upgrade head时报某表已经存在的错误：
+原因： 数据库中存的版本号为空，则执行命令时会执行所有的迁移脚本，因为数据库中已经存在这个表，
+迁移脚本中包含创建表的代码。
+解决方法： 修改迁移脚本中的代码。
+
+
+
+
+

@@ -1,0 +1,48 @@
+telnet连接
+windows打开程序与功能，打开windows功能，勾选开启Telnet服务器和客户端
+终端输入 telnet 127.0.0.1 11211
+
+Linux
+/usr/bin/memcached -u memcache -l 0.0.0.0 -d
+开启服务后输入 telnet 127.0.0.1 11211
+
+Linux:
+service memcached start
+查看服务进程
+ps aux|grep memcached
+
+
+安装python-memcached: pip install python-memcached
+
+建立连接: 
+# memcached支持分布式存储
+# server参数写入多个ip值，memcached会自动将设置的键值对随机存储在各个服务器中
+import memcache 
+mc = memcache.Client(["127.0.0.1:11211", "10.70.223.112"], debug=True)
+
+
+设置数据
+data = {
+    'username': 'xingchen ',
+    'password': '123456',
+    'age': 20,
+    'gender': 'male',
+    'hometown': 'HubeiXiangyang'
+
+}
+mc.set('number', '111')
+mc.set_multi(data)
+
+获取数据
+mc.get('number')
+
+删除数据
+mc.delete('number')
+
+自增长
+mc.incr('number', delta=1)
+
+自减少
+mc.decr('number', delta=1)
+
+

@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% from 'macro.html' import itemGroup %}
+{% block title %}
+
+{% endblock %}
+
+{% block body %}
+    {% for item in items %}
+        {{ itemGroup(item.title,item.thumbnail,item.rating)}}
+    {% endfor %}
+    
+{% endblock %}

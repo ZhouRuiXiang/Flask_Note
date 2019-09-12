@@ -1,0 +1,69 @@
+为什么需要模板继承
+
+模板继承可以把一些共用的（可复用）代码单独抽取出来放在一个
+父模板中，使得以后得修改较为方便
+
+模板继承
+
+1. 使用方式
+{% extends 'header_footer/header.html' %}
+
+block语法
+一般在父模板中，定义一些公共的代码，字模板根据具体的需求
+实现不同的代码。
+父模板应该有能力提供一个接口，让父模板来实现，从而实现具
+体业务需求的功能。
+
+使用方式：
+在父模板中：
+<nav class="nav">
+    <ul>
+        <li>首页</li>
+        <li>学习生活</li>
+        <li>失物招领</li>
+        <li>投稿</li>
+        <li>{{ about }}</li>
+    </ul>
+</nav>
+{% block header %}
+# 子模板中的代码继承到这里
+{% endblock %}
+
+
+
+在子模板中：
+# 声明继承关系
+{% extends 'header_footer/header.html' %}
+
+{% block header %}
+# 子模板中的内容
+{% endblock %}
+
+若要重写父模板中的代码：
+父模板中：
+{% block title %}
+        <title>武汉东湖学院</title>
+{% endblock %}
+
+子模板中：
+{% extends 'header_footer/base.html' %}
+
+
+{% block title  %}
+        <title>用户界面</title>
+{% endblock %}
+
+
+# 调用父模板中 header block的内容
+{{ super() }}
+
+# 调用另外一个block重写的代码
+<p>{{ self.title() }}</p>
+
+
+注意事项：
+1. 子模板中第一行代码必须是声明继承代码
+{% extends 'header_footer/header.html' %}
+
+2. 子模板中，如果要实现自己的代码，必须放在block中，
+否则不会渲染。

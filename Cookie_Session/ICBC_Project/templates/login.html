@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>中国工商银行登录页面</title>
+    <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+</head>
+<body>
+<form action="" method="post">
+{#    value中的csrf_token()调用的是CSRFProtect类中的生成csrf_token的方法#}
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <table>
+        <tbody>
+            <tr>
+                <td>邮箱：</td>
+                <td><input type="text" name="email"></td>
+            </tr>
+            <tr>
+                <td>密码：</td>
+                <td><input type="password" name="password"></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td><input id="login" type="submit" value="立即登录"></td>
+            </tr>
+        </tbody>
+    </table>
+</form>
+</body>
+</html>
