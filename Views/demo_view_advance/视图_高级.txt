@@ -191,7 +191,7 @@ app.add_url_rule('/profile/', view_func=ProfileView.as_view('profile'))
 
 # 2. 视图函数
 # 定义的装饰器一定要写在路由装饰器的下面
-# 原理： 写在上面时，访问/settings/就会路由到settings页面 装饰器失去作用
+# 原理： 写在上面时，访问/settings/就会直接直接执行被修饰函数settings,然后路由到settings页面，这样login_required装饰器就失去作用了
 # login_required(app.route('/settings/')(settings))
 # ==
 # @login_required
