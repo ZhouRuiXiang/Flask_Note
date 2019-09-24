@@ -7,6 +7,8 @@ X: XML		指定传输的数据格式（当时普遍使用XML）
 XML因为有特殊的格式，浪费传输流量，可以使用更加简洁的JSON做为传输数据格式
 AJAX:
 使用 JavaScript 向服务器提出请求并处理响应而不阻塞用户核心对象XMLHttpRequest。通过这个对象，您的 JavaScript 可在不重载页面的情况与 Web 服务器交换数据，即在不需要刷新页面的情况下，就可以产生局部刷新的效果
+# jquery cdn 
+https://www.bootcdn.cn/jquery/
 
 
 AJAX实现登录
