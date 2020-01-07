@@ -10,6 +10,7 @@ memcached是一个高性能的分布式的内存对象缓存系统，顾名思�
 
 # 安装和启动服务
 Windows: 
+# 管理员权限启动cmd终端
 memcached.exe -d install 
 memcached.exe -d start/stop
 
