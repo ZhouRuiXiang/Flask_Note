@@ -1,0 +1,63 @@
+1. 安装Python的SDK： pip install qiniu
+
+2. 编写uptoken的接口： 再后端代码（视图函数）写好一个接口，用来获取uptoken
+@app.route('/uptoken/')
+def uptoken():
+    access_key = '_MZMe1XwdcsqFnhpoqd2OtUC_VVaUr4ku6W1TIur'
+    secret_key = 'QWfV-5wpbO6Of-f7JQ0R2K0phljk79Qd7KumSviJ'
+    q = qiniu.Auth(access_key, secret_key)
+    bucket = 'starspace'
+    token = q.upload_token(bucket)
+    return jsonify({'uptoken': token})
+
+
+3. 在前端添加js的SDK： 七牛为JavaScript提供了一个专门用来上传文件的接口，引入以下文件
+
+<script src="https://cdn.staticfile.org/plupload/2.1.1/moxie.js"></script>
+<script src="https://cdn.staticfile.org/plupload/2.1.1/plupload.dev.js"></script>
+<script src="https://cdn.staticfile.org/qiniu-js-sdk/1.0.14-beta/qiniu.js"></script>
+# 自己封装的 starqiniu.js
+<script src="{{ url_for('static', filename='starqiniu.js') }}"></script>
+http://q3w8oarc6.bkt.clouddn.com/o_1du7rckg91d31p7t1moa13173bm7.jpg
+
+
+
+4.
+<script>
+    # 原生js 相当于$(function(){} }})
+    window.onload = function () {
+        starqiniu.setUp({
+            'domain': 'http://q3w8oarc6.bkt.clouddn.com/',
+            'browse_button':'upload-btn',
+            'uptoken_url':'/uptoken/',
+            'success':function (up,file,info) {
+                {#console.log(file);#}
+                var image_url = file.name;
+                var imageInput = document.getElementById('image-input');
+                imageInput.value = image_url;
+                var img = document.getElementById('img');
+                img.setAttribute('src',image_url)
+            }
+        })
+    }
+</script>
+
+
+<body>
+    <button id="upload-btn">上传文件</button>
+    <input type="text" id="image-input">
+    <img src="" alt="" id="img">
+</body>
+
+
+
+ps： 选择华东地区 否则会报地区设置错误
+
+
+
+
+
+
+
+
+
